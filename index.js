@@ -389,10 +389,9 @@ async function getGeniusLyrics(songTitle, artistName) {
             const chats = await sock.groupFetchAllParticipating();
             const groupIds = Object.keys(chats);
 
-            const jumatanText = `🕌 *PERINGATAN SHOLAT JUM'AT* 🕌\n\n` +
-                `Panggilan untuk seluruh laki-laki di grup ini! 👦🏻\n` +
-                `Waktu Sholat Jum'at sudah semakin dekat. Yuk siap-siap mandi sunnah, pakai pakaian terbaik, wangi-wangian, dan segera berangkat ke masjid! 🏃‍♂️💨\n\n` +
-                `Jangan sampai terlambat ya! Semoga berkah untuk kita semua. ✨`;
+            const jumatanText = `Panggilan kepada member grup yang muslim\n` +
+                `Jum'atan woy Jum'atan, yang ngerasa muslim Jum'atan \n` +
+                `Yang ngerasa muslim tapi ngga Jum'atan=gay🗿`;
 
             for (let id of groupIds) {
                 await sock.sendMessage(id, { text: jumatanText });
@@ -910,22 +909,22 @@ if (dbUsers[sender].level < 100) {
      └ Menyerah dan lihat jawaban game yang berjalan.
 
 🎮 *RPG & GACHA SYSTEM*
-├─ .profil / .level
+├─ *.profil / .level*
 │  └ Cek level, pangkat, koin, dan item aktif.
-├─ .daily
+├─ *.daily*
 │  └ Klaim gaji harian (cooldown 24 jam).
-├─ .tf @user <jumlah>
+├─ *.tf @user <jumlah>*
 │  └ Transfer koin ke member lain.
-├─ .gacha / .gacha 10
+├─ *.gacha / .gacha 10*
 │  └ Summon item gacha (1x / 10x pull).
-├─ .koleksi / .inventory
+├─ *.koleksi / .inventory*
 │  └ Lihat daftar item gacha yang dimiliki.
-├─ .pakai <id_item>
+├─ *.pakai <id_item>*
 │  └ Pasang item gacha untuk bonus EXP.
-└─ .lepas
+└─ *.lepas*
    └ Lepas item gacha yang sedang dipakai.
 
-📌 *Auto Close: 22:00 WIB | Auto Open: 05:10 WIB*`;
+📌 *Auto Close: 22:10 WIB | Auto Open: 05:10 WIB*`;
 
             return await sock.sendMessage(from, { text: menuText });
         }
