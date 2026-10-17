@@ -1,0 +1,706 @@
+const { 
+    makeWASocket, 
+    useMultiFileAuthState, 
+    DisconnectReason, 
+    downloadContentFromMessage 
+} = require('@whiskeysockets/baileys');
+const ffmpeg = require('fluent-ffmpeg');
+const yts = require('yt-search');
+const fs = require('fs');
+const { exec } = require('child_process');
+const readline = require('readline');
+const axios = require('axios');
+
+const SIDER_FILE = './sider_data.json';
+const POINT_FILE = './point_data.json';
+const AFK_FILE = './afk_data.json';
+
+let userActivity = {}; 
+let gameSession = {}; 
+let userPoints = {}; 
+let afkData = {}; 
+let playSession = {}; // Penyimpanan Sesi Pilihan Lagu (.play)
+
+if (fs.existsSync(SIDER_FILE)) {
+    try { userActivity = JSON.parse(fs.readFileSync(SIDER_FILE)); } catch (e) { userActivity = {}; }
+}
+function saveActivity() {
+    fs.writeFileSync(SIDER_FILE, JSON.stringify(userActivity, null, 2));
+}
+
+if (fs.existsSync(POINT_FILE)) {
+    try { userPoints = JSON.parse(fs.readFileSync(POINT_FILE)); } catch (e) { userPoints = {}; }
+}
+function savePoints() {
+    fs.writeFileSync(POINT_FILE, JSON.stringify(userPoints, null, 2));
+}
+
+if (fs.existsSync(AFK_FILE)) {
+    try { afkData = JSON.parse(fs.readFileSync(AFK_FILE)); } catch (e) { afkData = {}; }
+}
+function saveAfk() {
+    fs.writeFileSync(AFK_FILE, JSON.stringify(afkData, null, 2));
+}
+
+function addPoint(from, sender, amount = 10) {
+    userPoints[from] = userPoints[from] || {};
+    userPoints[from][sender] = (userPoints[from][sender] || 0) + amount;
+    savePoints();
+    return userPoints[from][sender];
+}
+
+function formatDuration(ms) {
+    let seconds = Math.floor(ms / 1000);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+
+    seconds = seconds % 60;
+    minutes = minutes % 60;
+
+    let res = [];
+    if (hours > 0) res.push(`${hours}h`);
+    if (minutes > 0) res.push(`${minutes}m`);
+    res.push(`${seconds}s`);
+    return res.join(' ');
+}
+
+process.on('uncaughtException', function (err) {
+    console.log('Caught exception: ', err.message);
+});
+process.on('unhandledRejection', function (err) {
+    console.log('Unhandled rejection: ', err?.message || err);
+});
+
+// BANK SOAL KUIS (50 SOAL)
+const ALL_QUESTIONS = [
+    { answer: 'TEDDY', question: 'Pendamping Presiden Prabowo' },
+    { answer: 'FEMBOY', question: 'Laki-laki dengan sifat feminim' },
+    { answer: 'TITUT', question: 'Bocah dengan gigi ompong' },
+    { answer: 'WIBUKU', question: 'Aplikasi nonton anime terkenal' },
+    { answer: 'PRABOWO', question: 'Presiden paling pintar di Indonesia' },
+    { answer: 'RUDEUS', question: 'Foto profil Rafi' },
+    { answer: 'KEYARU', question: 'MC anime tentang healer' },
+    { answer: 'SEII', question: 'Orang paling ngeselin di gc' },
+    { answer: 'MBG', question: 'Kalimat andalan karbit' },
+    { answer: 'TENSURA', question: 'Anime tentang slime' },
+    { answer: 'TOBI', question: 'Karakter bertopeng di anime Naruto' },
+    { answer: 'EMEL', question: 'Game mobile 5vs5' },
+    { answer: 'GENSHIN', question: 'Game kikir' },
+    { answer: 'EPEP', question: 'Game burik' },
+    { answer: 'NEKOPOI', question: 'Aplikasi streaming anime haram' },
+    { answer: 'KIRITO', question: 'Karakter anime yang tidak bisa log-out dari game' },
+    { answer: 'AMERIKA', question: 'Admin bumi' },
+    { answer: 'SPONGEBOB', question: 'Kartun dengan segudang sticker' },
+    { answer: 'HIMMEL', question: 'Karakter pahlawan legendaris dengan kata-katanya' },
+    { answer: 'EREN', question: 'Rumbling' },
+    { answer: 'RENGOKU', question: 'Donatnya anime Kimetsu no Yaiba' },
+    { answer: 'TELKOMSEL', question: 'Aplikasi iblis' },
+    { answer: 'KAORI', question: 'Cicaknya anime' },
+    { answer: 'KOMI', question: 'Kodoknya anime' },
+    { answer: 'REM', question: 'Koma dua season' },
+    { answer: 'SAWIT', question: 'Tumbuhan kesukaan Prabowo' },
+    { answer: 'DENIS', question: 'Karakter animasi Indonesia yang paling dibenci' },
+    { answer: 'MINECRAFT', question: 'Game kotak' },
+    { answer: 'CHITOGE', question: 'Gorilanya anime' },
+    { answer: 'ANOTHER', question: 'Anime dengan adegan tangga dan payung' },
+    { answer: 'PINJOL', question: 'Kegiatan memberikan identitas diri dan swafoto kepada aplikasi tertentu' },
+    { answer: 'JUDOL', question: 'Penyebab orang sering menghutang dan memiliki emosi tidak stabil' },
+    { answer: 'MELONTE', question: 'Kegiatan menjual diri' },
+    { answer: 'MAKIMA', question: 'Rendangnya Chainsaw Man' },
+    { answer: 'TUNG TUNG TUNG SAHUR', question: 'Karakter bentuk kentongan dan memegang tongkat' },
+    { answer: 'HIDEKO', question: 'Sahabat pena Kak Ros' },
+    { answer: 'CAPCUT', question: 'Aplikasi editing paling kikir' },
+    { answer: 'YORUSHIKA', question: 'Racing Into the Night' },
+    { answer: 'WALI', question: 'Grup musik religi Indonesia' },
+    { answer: 'EMPAT MATA', question: 'Lagu FTV SCTV jaman dulu' },
+    { answer: 'NOAH', question: 'Peterpan' },
+    { answer: 'GEISHA', question: 'Karena Kamu' },
+    { answer: 'ARMADA', question: 'Pergi Pagi Pulang Pagi' },
+    { answer: 'DEWA 19', question: 'Separuh Nafas' },
+    { answer: 'ONE DIRECTION', question: 'What Makes You Beautiful' },
+    { answer: 'DESPACITO', question: 'Lagunya Luis Fonsi' },
+    { answer: 'JUSTIN BIEBER', question: 'Beauty and a Beat' },
+    { answer: 'LADY GAGA', question: 'Paparazi' },
+    { answer: 'FIVE MINUTE', question: 'Semakin Ku Kejar Semakin Kau Jauh' },
+    { answer: 'HUJAN', question: 'Utopia' }
+];
+
+global.quizQueue = {};
+
+function getShuffledQuestions() {
+    let array = [...ALL_QUESTIONS];
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+async function startBot() {
+    const { state, saveCreds } = await useMultiFileAuthState('session_wa');
+    
+    const sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: false,
+        logger: require('pino')({ level: 'silent' })
+    });
+
+    sock.ev.on('creds.update', saveCreds);
+
+    sock.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect } = update;
+
+        if (connection === 'connecting' && !sock.authState.creds.registered) {
+            setTimeout(async () => {
+                const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+                const question = (text) => new Promise((resolve) => rl.question(text, resolve));
+                
+                console.log('\n=======================================');
+                const phoneNumber = await question('Masukkan Nomor WA Bot (Contoh: 6281234567890): ');
+                try {
+                    const code = await sock.requestPairingCode(phoneNumber.trim());
+                    console.log(`\n👉 KODE PAIRING KAMU: ${code}`);
+                    console.log('=======================================\n');
+                } catch (err) {
+                    console.log('Gagal mengambil kode pairing, coba jalankan ulang script.');
+                }
+                rl.close();
+            }, 3000);
+        }
+
+        if (connection === 'open') {
+            console.log('✅ Bot WhatsApp Berhasil Terhubung!');
+        } else if (connection === 'close') {
+            const statusCode = lastDisconnect?.error?.output?.statusCode;
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            console.log(`⚠️ Koneksi terputus (Status: ${statusCode}). Mencoba menghubungkan ulang dalam 5 detik...`);
+            
+            if (shouldReconnect) {
+                setTimeout(() => {
+                    startBot();
+                }, 5000);
+            }
+        }
+    });
+
+    sock.ev.on('group-participants.update', async (num) => {
+        const { id, participants, action } = num;
+        for (let p of participants) {
+            const jid = typeof p === 'string' ? p : p.id;
+            if (!jid) continue;
+
+            if (action === 'add') {
+                await sock.sendMessage(id, { 
+                    text: `Selamat datang @${jid.split('@')[0]}! Jangan lupa baca deskripsi grup ya.`, 
+                    mentions: [jid] 
+                });
+            } else if (action === 'remove') {
+                await sock.sendMessage(id, { 
+                    text: `Selamat tinggal @${jid.split('@')[0]} 👋`, 
+                    mentions: [jid] 
+                });
+            }
+        }
+    });
+
+    sock.ev.on('messages.upsert', async (m) => {
+        const msg = m.messages[0];
+        if (!msg.message || msg.key.fromMe) return;
+
+        const from = msg.key.remoteJid;
+        const sender = msg.key.participant || from;
+        const type = Object.keys(msg.message)[0];
+        
+        userActivity[from] = userActivity[from] || {};
+        userActivity[from][sender] = Date.now();
+        saveActivity();
+
+        const rawBody = msg.message.conversation || 
+                        msg.message.extendedTextMessage?.text || 
+                        msg.message.imageMessage?.caption || '';
+
+        const body = rawBody.trim();
+
+        // DETEKSI OTOMATIS: KELUAR DARI AFK SAAT PENGGUNA CHAT
+        if (afkData[sender]) {
+            const duration = formatDuration(Date.now() - afkData[sender].time);
+            const reason = afkData[sender].reason;
+            delete afkData[sender];
+            saveAfk();
+
+            await sock.sendMessage(from, { 
+                text: `✨ @${sender.split('@')[0]} telah kembali dari AFK.\n\n📝 *Alasan:* ${reason}\n⏳ *Durasi:* ${duration}`,
+                mentions: [sender]
+            }, { quoted: msg });
+        }
+
+        // DETEKSI OTOMATIS: JIKA MENTION / REPLY ORANG YANG LAGI AFK
+        let mentionedJids = msg.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
+        const quotedSender = msg.message.extendedTextMessage?.contextInfo?.participant;
+        if (quotedSender) mentionedJids.push(quotedSender);
+
+        if (mentionedJids.length > 0) {
+            for (let jid of mentionedJids) {
+                if (afkData[jid]) {
+                    const duration = formatDuration(Date.now() - afkData[jid].time);
+                    const reason = afkData[jid].reason;
+                    await sock.sendMessage(from, { 
+                        text: `⚠️ Jangan tag @${jid.split('@')[0]}, dia sedang *AFK*!\n\n📝 *Alasan:* ${reason}\n⏳ *Selama:* ${duration}`,
+                        mentions: [jid]
+                    }, { quoted: msg });
+                }
+            }
+        }
+
+        // FITUR UTAMA: Menu Bot (.menu / !menu)
+        if (body === '.menu' || body === '!menu' || body === '/menu' || body === '.help' || body === '!help') {
+            const menuText = `✨ *Daftar Menu Takamiya Bot* ✨\n\n🛠️ *MEDIA & TOOL*\n  ├ *.sticker* / *.stiker*\n  │  └ Kirim/reply gambar untuk bikin stiker.\n  ├ *.lagu <judul>*\n  │  └ Unduh lagu langsung otomatis.\n  ├ *.play <judul>*\n  │  └ Cari & pilih dari 5 daftar lagu.\n  ├ *.tt <link tiktok>*\n  │  └ Download video TikTok tanpa watermark.\n  └ *.ciduk*\n     └ Reply foto/video "Sekali Lihat" (View Once).\n\n💤 *PROFILE & STATUS*\n  └ *.afk <alasan>*\n     └ Mengatur status AFK kamu.\n\n👥 *FITUR GRUP*\n  ├ *.cek-sider*\n  │  └ Cek member grup yang tidak aktif 3 hari.\n  └ *.hidetag <pesan>*\n     └ Tag semua member grup secara tersembunyi.\n\n🎮 *MINI GAMES & POIN*\n  ├ *.tebakkata* / *.susunkata*\n  │  └ Kuis tebak kata dari clue/soal kocak.\n  ├ *.tebakangka*\n  │  └ Game tebak angka 1 - 10.\n  ├ *.poin* / *.me*\n  │  └ Cek poin kamu khusus di grup ini.\n  ├ *.top* / *.leaderboard*\n  │  └ Cek 5 pemain poin tertinggi di grup ini.\n  └ *.nyerah*\n     └ Menyerah dan lihat jawaban game.\n\n📌 _Poin terpisah di tiap grup demi keadilan bersama!_`;
+
+            return await sock.sendMessage(from, { text: menuText });
+        }
+
+        // FITUR AFK SYSTEM (.afk / !afk)
+        if (body.startsWith('.afk') || body.startsWith('!afk')) {
+            const reason = body.replace(/^\.afk|^\!afk/, '').trim() || 'Tanpa alasan';
+            afkData[sender] = {
+                time: Date.now(),
+                reason: reason
+            };
+            saveAfk();
+
+            return await sock.sendMessage(from, { 
+                text: `💤 *Status AFK Diatur*\n\n👤 *User:* @${sender.split('@')[0]}\n📝 *Alasan:* ${reason}`,
+                mentions: [sender]
+            }, { quoted: msg });
+        }
+
+        // FITUR PLAY INTERAKTIF (.play <judul>)
+        if (body.startsWith('.play ') || body.startsWith('!play ')) {
+            const query = body.replace(/^\.play |^\!play /, '').trim();
+            if (!query) return await sock.sendMessage(from, { text: '❌ Masukkan judul lagu! Contoh: *.play solo*' });
+
+            await sock.sendMessage(from, { text: `🔍 Mencari lagu: *${query}*...` });
+
+            try {
+                const search = await yts(query);
+                const results = search.videos.slice(0, 5);
+
+                if (!results.length) {
+                    return sock.sendMessage(from, { text: '❌ Lagu tidak ditemukan.' });
+                }
+
+                let listText = `🎵 *Hasil Pencarian YouTube*\nKata kunci: *${query}*\n\n`;
+                results.forEach((v, index) => {
+                    listText += `${index + 1}. *${v.title}* [${v.timestamp}]\n`;
+                });
+
+                listText += `\n👉 *Pilih Lagu:*\nBalas (reply) pesan ini dengan *nomor urut* lagu yang ingin diputar (contoh: *1*).`;
+
+                const sentMsg = await sock.sendMessage(from, { text: listText }, { quoted: msg });
+
+                playSession[sentMsg.key.id] = {
+                    sender: sender,
+                    results: results
+                };
+
+                // Hapus sesi otomatis setelah 3 menit biar gak menumpuk
+                setTimeout(() => {
+                    if (playSession[sentMsg.key.id]) delete playSession[sentMsg.key.id];
+                }, 180000);
+
+            } catch (e) {
+                console.error(e);
+                await sock.sendMessage(from, { text: '❌ Terjadi kesalahan saat mencari lagu.' });
+            }
+        }
+
+        // RESPON NOMOR PILIHAN UNTUK .play (PILIH 1 - 5)
+        const isQuoted = type === 'extendedTextMessage' && msg.message.extendedTextMessage.contextInfo?.quotedMessage;
+        if (isQuoted) {
+            const quotedId = msg.message.extendedTextMessage.contextInfo.stanzaId;
+            if (playSession[quotedId]) {
+                const session = playSession[quotedId];
+                if (session.sender === sender) {
+                    const choice = parseInt(body);
+                    if (!isNaN(choice) && choice >= 1 && choice <= session.results.length) {
+                        const selectedVideo = session.results[choice - 1];
+                        delete playSession[quotedId];
+
+                        await sock.sendMessage(from, { text: `🎵 Memproses pilihan *#${choice}*: *${selectedVideo.title}*\nDurasi: ${selectedVideo.timestamp}` });
+
+                        const tempAudio = `./music_${Date.now()}.mp3`;
+
+                        exec(`yt-dlp -x --audio-format mp3 -o "${tempAudio}" "${selectedVideo.url}"`, async (error) => {
+                            if (error) {
+                                console.error(error);
+                                return sock.sendMessage(from, { text: '❌ Gagal mengunduh audio (kemungkinan pembatasan usia/hak cipta).' });
+                            }
+
+                            if (fs.existsSync(tempAudio)) {
+                                await sock.sendMessage(from, { 
+                                    audio: fs.readFileSync(tempAudio), 
+                                    mimetype: 'audio/mpeg',
+                                    fileName: `${selectedVideo.title}.mp3`
+                                }, { quoted: msg });
+                                fs.unlinkSync(tempAudio);
+                            }
+                        });
+                        return;
+                    } else {
+                        return await sock.sendMessage(from, { text: '❌ Nomor pilihan tidak valid! Ketik angka 1 sampai 5.' });
+                    }
+                }
+            }
+        }
+
+        // FITUR CEK POIN SAYA PER-GRUP (.poin / .me)
+        if (body === '.poin' || body === '!poin' || body === '.me' || body === '!me') {
+            const myPoint = (userPoints[from] && userPoints[from][sender]) ? userPoints[from][sender] : 0;
+            return await sock.sendMessage(from, { 
+                text: `👤 @${sender.split('@')[0]}\n⭐ Total Poin Kamu di Grup Ini: *${myPoint} Poin*`,
+                mentions: [sender]
+            });
+        }
+
+        // FITUR LEADERBOARD PER-GRUP (.top / .leaderboard)
+        if (body === '.top' || body === '!top' || body === '.leaderboard' || body === '!leaderboard') {
+            try {
+                const groupPts = userPoints[from] || {};
+                const sorted = Object.entries(groupPts)
+                    .filter(([, pts]) => typeof pts === 'number' && pts > 0)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 5);
+
+                if (sorted.length === 0) {
+                    return await sock.sendMessage(from, { 
+                        text: '🏆 Belum ada yang memiliki poin di grup ini.\n\nYuk mainkan *.tebakkata* atau *.tebakangka* untuk mengumpulkan poin pertama!' 
+                    });
+                }
+
+                let text = `🏆 *KLASEMEN TOP 5 PEMAIN GRUP* 🏆\n\n`;
+                let mentions = [];
+                sorted.forEach(([jid, pts], i) => {
+                    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🎗️';
+                    text += `${medal} ${i + 1}. @${jid.split('@')[0]} - *${pts} Poin*\n`;
+                    mentions.push(jid);
+                });
+
+                return await sock.sendMessage(from, { text: text, mentions: mentions });
+            } catch (err) {
+                console.error('Error pada .top:', err);
+                return await sock.sendMessage(from, { text: '❌ Terjadi kesalahan saat memuat leaderboard.' });
+            }
+        }
+
+        // FITUR 1: Pembuat Stiker (.sticker / .stiker)
+        if (body.startsWith('.sticker') || body.startsWith('!sticker') || body.startsWith('.stiker') || body.startsWith('!stiker')) {
+            const isImage = type === 'imageMessage';
+            const isQuotedImage = type === 'extendedTextMessage' && msg.message.extendedTextMessage.contextInfo?.quotedMessage?.imageMessage;
+
+            if (isImage || isQuotedImage) {
+                await sock.sendMessage(from, { text: '⏳ Lagi bikin stiker...' });
+                
+                const targetMsg = isImage ? msg.message.imageMessage : msg.message.extendedTextMessage.contextInfo.quotedMessage.imageMessage;
+                const stream = await downloadContentFromMessage(targetMsg, 'image');
+                let buffer = Buffer.from([]);
+                for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+
+                const tempIn = `./temp_${Date.now()}.jpg`;
+                const tempOut = `./temp_${Date.now()}.webp`;
+                fs.writeFileSync(tempIn, buffer);
+
+                ffmpeg(tempIn)
+                    .outputOptions(['-vcodec libwebp', '-vf scale=512:512:force_original_aspect_ratio=increase,crop=512:512'])
+                    .toFormat('webp')
+                    .save(tempOut)
+                    .on('end', async () => {
+                        await sock.sendMessage(from, { sticker: fs.readFileSync(tempOut) });
+                        if (fs.existsSync(tempIn)) fs.unlinkSync(tempIn);
+                        if (fs.existsSync(tempOut)) fs.unlinkSync(tempOut);
+                    })
+                    .on('error', async (err) => {
+                        console.error(err);
+                        await sock.sendMessage(from, { text: '❌ Gagal membuat stiker.' });
+                    });
+            } else {
+                await sock.sendMessage(from, { text: 'Kirim/reply gambar dengan caption *.sticker*' });
+            }
+        }
+
+        // FITUR 2: Cari Lagu Langsung (.lagu / !lagu)
+        if (body.startsWith('.lagu ') || body.startsWith('!lagu ')) {
+            const query = body.replace(/^\.lagu |^\!lagu /, '').trim();
+            if (!query) return await sock.sendMessage(from, { text: '❌ Masukkan judul lagu! Contoh: *.lagu solo*' });
+
+            await sock.sendMessage(from, { text: `🔍 Mencari lagu: *${query}*...` });
+
+            try {
+                const search = await yts(query);
+                if (!search.videos.length) {
+                    return sock.sendMessage(from, { text: 'Lagu tidak ditemukan.' });
+                }
+
+                const video = search.videos[0];
+                if (video.seconds > 600) { 
+                    return sock.sendMessage(from, { text: '❌ Lagunya kepanjangan (lebih dari 10 menit)! File kebesaran dan bakal ditolak.' });
+                }
+
+                await sock.sendMessage(from, { text: `🎵 Memproses: *${video.title}*\nDurasi: ${video.timestamp}` });
+
+                const tempAudio = `./music_${Date.now()}.mp3`;
+
+                exec(`yt-dlp -x --audio-format mp3 -o "${tempAudio}" "${video.url}"`, async (error) => {
+                    if (error) {
+                        console.error(error);
+                        return sock.sendMessage(from, { text: '❌ Gagal mengunduh audio (kemungkinan pembatasan usia/hak cipta).' });
+                    }
+
+                    if (fs.existsSync(tempAudio)) {
+                        await sock.sendMessage(from, { 
+                            audio: fs.readFileSync(tempAudio), 
+                            mimetype: 'audio/mpeg',
+                            fileName: `${video.title}.mp3`
+                        });
+                        fs.unlinkSync(tempAudio);
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+                await sock.sendMessage(from, { text: '❌ Terjadi kesalahan saat mencari lagu.' });
+            }
+        }
+
+        // FITUR PENCARIAN LIRIK (.lirik <judul lagu>)
+        if (body.startsWith('.lirik ') || body.startsWith('!lirik ')) {
+            const query = body.replace(/^\.lirik |^\!lirik /, '').trim();
+            if (!query) return await sock.sendMessage(from, { text: '❌ Masukkan judul lagu! Contoh: *.lirik lilith*' });
+
+            await sock.sendMessage(from, { text: `🔍 Mencari lirik lagu: *${query}*...` });
+
+            try {
+                const res = await axios.get(`https://api.vreden.web.id/api/lirik?query=${encodeURIComponent(query)}`);
+                const result = res.data?.result;
+
+                if (result) {
+                    const caption = `🎶 *INFO & LIRIK LAGU* 🎶\n\n📌 *Judul:* ${result.title || query}\n👤 *Artis:* ${result.artist || '-'}\n\n📝 *Cuplikan Lirik:*\n${result.lyrics ? result.lyrics.slice(0, 300) + '...' : 'Lirik lengkap dapat dicari langsung melalui Google Search.'}\n\n💡 _Ketik *.play ${query}* atau *.lagu ${query}* untuk mengunduh file audio MP3 lagu ini!_`;
+                    
+                    if (result.thumb || result.image) {
+                        await sock.sendMessage(from, { image: { url: result.thumb || result.image }, caption: caption }, { quoted: msg });
+                    } else {
+                        await sock.sendMessage(from, { text: caption }, { quoted: msg });
+                    }
+                } else {
+                    await sock.sendMessage(from, { text: '❌ Lirik lagu tidak ditemukan. Coba ketik judul & nama penyanyi lebih spesifik.' });
+                }
+            } catch (e) {
+                console.error(e);
+                await sock.sendMessage(from, { text: '❌ Gagal mengambil lirik. Server pencari lirik sedang sibuk.' });
+            }
+        }
+
+        // FITUR 3: Cek Sider (.cek-sider / !cek-sider)
+        if ((body === '.cek-sider' || body === '!cek-sider') && from.endsWith('@g.us')) {
+            const groupMetadata = await sock.groupMetadata(from);
+            const members = groupMetadata.participants;
+            const now = Date.now();
+            const batasHari = 3 * 24 * 60 * 60 * 1000; 
+
+            let siderList = [];
+            const botNumber = sock.user.id.split(':')[0].split('@')[0];
+
+            for (let member of members) {
+                const memberJid = member.id || member;
+                if (memberJid.startsWith(botNumber)) continue;
+
+                const lastSeen = userActivity[from]?.[memberJid];
+
+                if (!lastSeen) {
+                    siderList.push({ jid: memberJid, status: 'belum pernah chat sejak bot aktif' });
+                } else if (now - lastSeen > batasHari) {
+                    const selisihHari = Math.floor((now - lastSeen) / (1000 * 60 * 60 * 24));
+                    siderList.push({ jid: memberJid, status: `tidak aktif ${selisihHari} hari` });
+                }
+            }
+
+            if (siderList.length === 0) {
+                return await sock.sendMessage(from, { text: '✅ Mantap, semua member grup aktif terus nih!' });
+            }
+
+            let teks = `⚠️ *Member Tidak Aktif*\n\n`;
+            let mentions = [];
+
+            siderList.forEach((item, i) => {
+                teks += `${i + 1}. @${item.jid.split('@')[0]} (${item.status})\n`;
+                mentions.push(item.jid);
+            });
+
+            teks += `\n🚨 *Peringatan:* Buat nama-nama yang ke-tag di atas, tolong diramaikan lagi ya grupnya! Jangan cuma baca doang atau jadi pajangan. Yuk aktif lagi! 🔥`;
+            
+            await sock.sendMessage(from, { text: teks, mentions: mentions });
+        }
+
+        // FITUR 4: Download TikTok (.tt / !tt)
+        if (body.startsWith('.tt ') || body.startsWith('!tt ')) {
+            const url = body.replace(/^\.tt |^\!tt /, '').trim();
+            await sock.sendMessage(from, { text: '⏳ Mengunduh video TikTok...' });
+
+            try {
+                const tempVideo = `./tt_${Date.now()}.mp4`;
+                exec(`yt-dlp -o "${tempVideo}" "${url}"`, async (error) => {
+                    if (error) {
+                        console.error(error);
+                        return sock.sendMessage(from, { text: '❌ Gagal mengunduh video TikTok.' });
+                    }
+                    if (fs.existsSync(tempVideo)) {
+                        await sock.sendMessage(from, { video: fs.readFileSync(tempVideo), caption: '✨ Nih videonya!' });
+                        fs.unlinkSync(tempVideo);
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+                await sock.sendMessage(from, { text: '❌ Terjadi kesalahan.' });
+            }
+        }
+
+        // FITUR 5: Hidetag (.hidetag / !hidetag)
+        if ((body.startsWith('.hidetag ') || body.startsWith('!hidetag ')) && from.endsWith('@g.us')) {
+            const pesan = body.replace(/^\.hidetag |^\!hidetag /, '');
+            const groupMetadata = await sock.groupMetadata(from);
+            const members = groupMetadata.participants.map(m => m.id);
+
+            await sock.sendMessage(from, { text: pesan, mentions: members });
+        }
+
+        // FITUR 6: Ciduk View Once (.ciduk / !ciduk)
+        if (body === '.ciduk' || body === '!ciduk') {
+            const isQuoted = type === 'extendedTextMessage' && msg.message.extendedTextMessage.contextInfo?.quotedMessage;
+            
+            if (isQuoted) {
+                const quotedMsg = msg.message.extendedTextMessage.contextInfo.quotedMessage;
+                
+                let innerMsg = quotedMsg.viewOnceMessageV2?.message || 
+                               quotedMsg.viewOnceMessageV2Extension?.message || 
+                               quotedMsg.viewOnceMessage?.message;
+                
+                if (!innerMsg && (quotedMsg.imageMessage?.viewOnce || quotedMsg.videoMessage?.viewOnce)) {
+                    innerMsg = quotedMsg;
+                }
+
+                if (innerMsg) {
+                    await sock.sendMessage(from, { text: '⏳ Membuka media rahasia...' });
+                    
+                    const messageType = innerMsg.imageMessage ? 'imageMessage' : (innerMsg.videoMessage ? 'videoMessage' : null);
+                    
+                    if (messageType) {
+                        try {
+                            const stream = await downloadContentFromMessage(innerMsg[messageType], messageType === 'imageMessage' ? 'image' : 'video');
+                            let buffer = Buffer.from([]);
+                            for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+
+                            const caption = innerMsg[messageType].caption || '';
+                            
+                            if (messageType === 'imageMessage') {
+                                await sock.sendMessage(from, { image: buffer, caption: `📸 *Terciduk!*\n${caption}` });
+                            } else {
+                                await sock.sendMessage(from, { video: buffer, caption: `🎥 *Terciduk!*\n${caption}` });
+                            }
+                        } catch (err) {
+                            await sock.sendMessage(from, { text: '❌ Gagal mendownload media. Cache mungkin sudah dihapus.' });
+                        }
+                    } else {
+                        await sock.sendMessage(from, { text: '❌ Format media tidak didukung (bukan foto/video).' });
+                    }
+                } else {
+                    await sock.sendMessage(from, { text: '❌ Pesan ini tidak terdeteksi sebagai "Sekali Lihat" oleh sistem.' });
+                }
+            } else {
+                await sock.sendMessage(from, { text: '❌ Reply pesan "Sekali Lihat" dengan perintah *.ciduk*' });
+            }
+        }
+
+        // FITUR GAME 1: Tebak Angka (.tebakangka / !tebakangka)
+        if (body === '.tebakangka' || body === '!tebakangka') {
+            if (gameSession[from]) return await sock.sendMessage(from, { text: '❌ Masih ada game yang berjalan di chat/grup ini!' });
+
+            const targetNumber = Math.floor(Math.random() * 10) + 1;
+            gameSession[from] = {
+                type: 'tebakangka',
+                answer: targetNumber.toString(),
+                attempts: 3
+            };
+
+            return await sock.sendMessage(from, { 
+                text: '🎮 *GAME TEBAK ANGKA*\nAku sudah memilih angka dari *1 sampai 10*.\nKamu punya 3 kali kesempatan! Ketik angkamu langsung di chat.' 
+            });
+        }
+
+        // FITUR GAME 2: Tebak Kata (.tebakkata / .susunkata)
+        if (body === '.tebakkata' || body === '!tebakkata' || body === '.susunkata' || body === '!susunkata') {
+            if (gameSession[from]) return await sock.sendMessage(from, { text: '❌ Masih ada game yang berjalan di chat/grup ini!' });
+
+            if (!global.quizQueue[from] || global.quizQueue[from].length === 0) {
+                global.quizQueue[from] = getShuffledQuestions();
+            }
+
+            const selected = global.quizQueue[from].shift();
+
+            gameSession[from] = {
+                type: 'tebakkata',
+                answer: selected.answer
+            };
+
+            const sisa = global.quizQueue[from].length;
+            return await sock.sendMessage(from, { 
+                text: `❓ *KUIS TEBAK KATA*\n\nPertanyaan: *${selected.question}*\n\nKetik jawabanmu langsung di chat!\n_(Sisa antrean soal unik: ${sisa}/50)_` 
+            });
+        }
+
+        // PENANGANAN JAWABAN GAME OTOMATIS + POIN PER-GRUP
+        if (gameSession[from]) {
+            const currentGame = gameSession[from];
+            const userAnswer = body.trim().toUpperCase();
+
+            if (currentGame.type === 'tebakangka') {
+                if (/^\d+$/.test(userAnswer)) {
+                    if (userAnswer === currentGame.answer) {
+                        delete gameSession[from];
+                        const totalPts = addPoint(from, sender, 10);
+                        return await sock.sendMessage(from, { 
+                            text: `🎉 *TEPAT BANGET!* @${sender.split('@')[0]} Jawabannya memang angka *${userAnswer}*!\n✨ Kamu mendapatkan *+10 Poin* (Total di grup ini: ${totalPts} Poin)`,
+                            mentions: [sender]
+                        });
+                    } else {
+                        currentGame.attempts -= 1;
+                        if (currentGame.attempts <= 0) {
+                            const correct = currentGame.answer;
+                            delete gameSession[from];
+                            return await sock.sendMessage(from, { text: `💥 *GAME OVER!* Kesempatan habis. Jawabannya adalah *${correct}*.` });
+                        } else {
+                            return await sock.sendMessage(from, { text: `❌ Salah! Sisa kesempatan: ${currentGame.attempts} kali lagi.` });
+                        }
+                    }
+                }
+            }
+
+            if (currentGame.type === 'tebakkata') {
+                if (userAnswer === currentGame.answer) {
+                    delete gameSession[from];
+                    const totalPts = addPoint(from, sender, 10);
+                    return await sock.sendMessage(from, { 
+                        text: `🎉 *BENAR!* @${sender.split('@')[0]} Jawabannya adalah *${userAnswer}*!\n✨ Kamu mendapatkan *+10 Poin* (Total di grup ini: ${totalPts} Poin)`,
+                        mentions: [sender]
+                    });
+                }
+            }
+        }
+
+        if ((body === '.nyerah' || body === '!nyerah') && gameSession[from]) {
+            const ans = gameSession[from].answer;
+            delete gameSession[from];
+            return await sock.sendMessage(from, { text: `🏳️ Kamu menyerah! Jawabannya adalah: *${ans}*` });
+        }
+
+    });
+}
+
+startBot();
