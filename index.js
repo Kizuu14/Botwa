@@ -1267,7 +1267,7 @@ if (body.startsWith('.addcoin ') || body.startsWith('.addkoin ')) {
     }, { quoted: msg });
 }
 
-        // FITUR STIKER MEME LOKAL FFMPEG (.smeme teks)
+// FITUR STIKER MEME LOKAL FFMPEG (.smeme teks)
         if (body.startsWith('.smeme') || body.startsWith('!smeme')) {
             const isImg = type === 'imageMessage';
             const isQImg = type === 'extendedTextMessage' && msg.message.extendedTextMessage.contextInfo?.quotedMessage?.imageMessage;
@@ -1356,7 +1356,7 @@ if (body.startsWith('.addcoin ') || body.startsWith('.addkoin ')) {
                     const safeLine = cleanText(line);
                     if (safeLine) {
                         const yPos = 20 + (index * topSpacing);
-                        drawFilters.push(`drawtext=fontfile='${fontPath}':text='${safeLine}':x=(w-text_w)/2:y=${yPos}:fontcolor=white:fontsize=${topFontSize}:borderw=4:bordercol=black`);
+                        drawFilters.push(`drawtext=fontfile='${fontPath}':text='${safeLine}':x=(w-text_w)/2:y=${yPos}:fontcolor=white:fontsize=${topFontSize}:borderw=4:bordercolor=black`);
                     }
                 });
 
@@ -1366,7 +1366,7 @@ if (body.startsWith('.addcoin ') || body.startsWith('.addkoin ')) {
                     const safeLine = cleanText(line);
                     if (safeLine) {
                         const yPos = `h-text_h-20-${(totalBottom - 1 - index) * bottomSpacing}`;
-                        drawFilters.push(`drawtext=fontfile='${fontPath}':text='${safeLine}':x=(w-text_w)/2:y=${yPos}:fontcolor=white:fontsize=${bottomFontSize}:borderw=4:bordercol=black`);
+                        drawFilters.push(`drawtext=fontfile='${fontPath}':text='${safeLine}':x=(w-text_w)/2:y=${yPos}:fontcolor=white:fontsize=${bottomFontSize}:borderw=4:bordercolor=black`);
                     }
                 });
 
