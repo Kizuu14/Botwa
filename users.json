@@ -1,8 +1,8 @@
 {
   "206214399049904@lid": {
-    "xp": 2761,
-    "level": 3,
-    "coin": 83807,
+    "xp": 1884,
+    "level": 5,
+    "coin": 88939,
     "inventory": [
       "m1",
       "e4",
@@ -24,12 +24,12 @@
       "c24"
     ],
     "equippedItem": "m1",
-    "lastDaily": 1791759456020
+    "lastDaily": 1792383429266
   },
   "254327042089021@lid": {
-    "xp": 1200,
-    "level": 2,
-    "coin": 2216,
+    "xp": 2450,
+    "level": 3,
+    "coin": 4216,
     "inventory": [
       "r7"
     ],
@@ -37,16 +37,16 @@
     "lastDaily": 1791781261284
   },
   "14641795195077@lid": {
-    "xp": 410,
+    "xp": 1780,
     "level": 2,
     "coin": 2000,
     "inventory": [],
     "equippedItem": null
   },
   "56663822307334@lid": {
-    "xp": 840,
-    "level": 2,
-    "coin": 3000,
+    "xp": 880,
+    "level": 3,
+    "coin": 5000,
     "inventory": [],
     "equippedItem": null
   },
@@ -60,23 +60,23 @@
     "equippedItem": "e4"
   },
   "140935140761737@lid": {
-    "xp": 710,
+    "xp": 1380,
     "level": 2,
     "coin": 2000,
     "inventory": [],
     "equippedItem": null
   },
   "13816993693754@lid": {
-    "xp": 1000,
-    "level": 4,
-    "coin": 7000,
+    "xp": 390,
+    "level": 5,
+    "coin": 9000,
     "inventory": [],
     "equippedItem": null
   },
   "217094054523030@lid": {
-    "xp": 619,
-    "level": 3,
-    "coin": 4875,
+    "xp": 512,
+    "level": 4,
+    "coin": 6875,
     "inventory": [
       "e8",
       "r43"
@@ -92,7 +92,7 @@
     "equippedItem": null
   },
   "166880971079925@lid": {
-    "xp": 2099,
+    "xp": 3991,
     "level": 4,
     "coin": 13079,
     "inventory": [
@@ -103,30 +103,37 @@
     "lastDaily": 1791902868949
   },
   "270183658737674@lid": {
-    "xp": 150,
+    "xp": 760,
     "level": 1,
     "coin": 0,
     "inventory": [],
     "equippedItem": null
   },
   "99128046555352@lid": {
-    "xp": 140,
+    "xp": 416,
     "level": 1,
-    "coin": 0,
-    "inventory": [],
-    "equippedItem": null
+    "coin": 463,
+    "inventory": [
+      "c13",
+      "c59"
+    ],
+    "equippedItem": "c59",
+    "lastDaily": 1792477263674
   },
   "153455054327996@lid": {
-    "xp": 250,
+    "xp": 990,
     "level": 1,
-    "coin": 0,
-    "inventory": [],
-    "equippedItem": null
+    "coin": 1802,
+    "inventory": [
+      "e5"
+    ],
+    "equippedItem": null,
+    "lastDaily": 1792454631728
   },
   "108001935519975@lid": {
-    "xp": 172,
+    "xp": 445,
     "level": 4,
-    "coin": 6011,
+    "coin": 8123,
     "inventory": [
       "e5",
       "l5",
@@ -148,21 +155,31 @@
       "r14"
     ],
     "equippedItem": "m1",
-    "lastDaily": 1791865505684
+    "lastDaily": 1792383175400
   },
   "32766641045745@lid": {
-    "xp": 1210,
+    "xp": 1512,
     "level": 3,
-    "coin": 9142,
+    "coin": 2047,
     "inventory": [
       "r2",
       "l5",
       "c20",
       "e4",
-      "c66"
+      "c66",
+      "c31",
+      "c78",
+      "r4",
+      "e2",
+      "c71",
+      "c12",
+      "e38",
+      "r35",
+      "c47",
+      "r59"
     ],
-    "equippedItem": null,
-    "lastDaily": 1791865545479
+    "equippedItem": "l5",
+    "lastDaily": 1792384119118
   },
   "273606663774375@lid": {
     "xp": 70,
@@ -172,18 +189,22 @@
     "equippedItem": null
   },
   "111128050925727@lid": {
-    "xp": 170,
+    "xp": 340,
     "level": 1,
     "coin": 0,
     "inventory": [],
     "equippedItem": null
   },
   "116063404609586@lid": {
-    "xp": 130,
+    "xp": 562,
     "level": 1,
-    "coin": 0,
-    "inventory": [],
-    "equippedItem": null
+    "coin": 140,
+    "inventory": [
+      "c19",
+      "c71"
+    ],
+    "equippedItem": "c19",
+    "lastDaily": 1792386434926
   },
   "204934448459867@lid": {
     "xp": 90,
@@ -193,9 +214,9 @@
     "equippedItem": null
   },
   "24034821546058@lid": {
-    "xp": 3004,
-    "level": 5,
-    "coin": 6865,
+    "xp": 2840,
+    "level": 6,
+    "coin": 11788,
     "inventory": [
       "e8",
       "e2",
@@ -212,10 +233,10 @@
       "c29"
     ],
     "equippedItem": "l1",
-    "lastDaily": 1791990985770
+    "lastDaily": 1792383364826
   },
   "224554463039494@lid": {
-    "xp": 110,
+    "xp": 170,
     "level": 1,
     "coin": 0,
     "inventory": [],
@@ -241,9 +262,9 @@
     "lastDaily": 1791780815036
   },
   "156062535696590@lid": {
-    "xp": 2789,
-    "level": 3,
-    "coin": 7314,
+    "xp": 1301,
+    "level": 4,
+    "coin": 9314,
     "inventory": [
       "c19",
       "r9",
@@ -257,14 +278,14 @@
     "lastDaily": 1791997630591
   },
   "169578613178421@lid": {
-    "xp": 550,
-    "level": 1,
-    "coin": 0,
+    "xp": 20,
+    "level": 2,
+    "coin": 2000,
     "inventory": [],
     "equippedItem": null
   },
   "146471353639109@lid": {
-    "xp": 175,
+    "xp": 215,
     "level": 1,
     "coin": 300,
     "inventory": [],
@@ -278,7 +299,7 @@
     "equippedItem": null
   },
   "32500084662484@lid": {
-    "xp": 735,
+    "xp": 1325,
     "level": 2,
     "coin": 7264,
     "inventory": [],
@@ -286,27 +307,30 @@
     "lastDaily": 1791998286956
   },
   "182472440578289@lid": {
-    "xp": 260,
+    "xp": 280,
     "level": 1,
     "coin": 0,
     "inventory": [],
     "equippedItem": null
   },
   "162736445067407@lid": {
-    "xp": 770,
-    "level": 1,
-    "coin": 385,
+    "xp": 350,
+    "level": 2,
+    "coin": 664,
     "inventory": [
       "c59",
-      "r60"
+      "r60",
+      "c53",
+      "c48",
+      "c63"
     ],
     "equippedItem": null,
-    "lastDaily": 1791958336935
+    "lastDaily": 1792409187099
   },
   "2628855558258@lid": {
-    "xp": 559,
-    "level": 3,
-    "coin": 474,
+    "xp": 2707,
+    "level": 4,
+    "coin": 464,
     "inventory": [
       "c18",
       "l1",
@@ -314,15 +338,19 @@
       "c21",
       "c42",
       "r27",
-      "c17"
+      "c17",
+      "c51",
+      "c73",
+      "e6",
+      "e40"
     ],
     "equippedItem": "l1",
-    "lastDaily": 1791898166097
+    "lastDaily": 1792490510368
   },
   "64420348694530@lid": {
-    "xp": 520,
-    "level": 1,
-    "coin": 0,
+    "xp": 210,
+    "level": 2,
+    "coin": 2000,
     "inventory": [],
     "equippedItem": null
   },
@@ -334,21 +362,24 @@
     "equippedItem": null
   },
   "250581394399415@lid": {
-    "xp": 40,
+    "xp": 60,
     "level": 1,
     "coin": 0,
     "inventory": [],
     "equippedItem": null
   },
   "122093370921140@lid": {
-    "xp": 235,
+    "xp": 265,
     "level": 1,
-    "coin": 500,
-    "inventory": [],
-    "equippedItem": null
+    "coin": 1360,
+    "inventory": [
+      "c47"
+    ],
+    "equippedItem": null,
+    "lastDaily": 1792399958185
   },
   "156208547786908@lid": {
-    "xp": 300,
+    "xp": 540,
     "level": 1,
     "coin": 0,
     "inventory": [],
@@ -362,35 +393,35 @@
     "equippedItem": null
   },
   "149550878732500@lid": {
-    "xp": 480,
-    "level": 1,
-    "coin": 0,
+    "xp": 140,
+    "level": 2,
+    "coin": 2000,
     "inventory": [],
     "equippedItem": null
   },
   "229515150258360@lid": {
-    "xp": 170,
+    "xp": 330,
     "level": 1,
     "coin": 0,
     "inventory": [],
     "equippedItem": null
   },
   "96130545225780@lid": {
-    "xp": 210,
+    "xp": 380,
     "level": 1,
     "coin": 0,
     "inventory": [],
     "equippedItem": null
   },
   "166546584375389@lid": {
-    "xp": 100,
-    "level": 3,
-    "coin": 4000,
+    "xp": 3050,
+    "level": 4,
+    "coin": 6000,
     "inventory": [],
     "equippedItem": null
   },
   "140175065776279@lid": {
-    "xp": 40,
+    "xp": 70,
     "level": 1,
     "coin": 0,
     "inventory": [],
@@ -404,14 +435,14 @@
     "equippedItem": null
   },
   "8087440232627@lid": {
-    "xp": 90,
+    "xp": 320,
     "level": 1,
     "coin": 0,
     "inventory": [],
     "equippedItem": null
   },
   "97891263725637@lid": {
-    "xp": 80,
+    "xp": 280,
     "level": 1,
     "coin": 0,
     "inventory": [],
@@ -428,11 +459,16 @@
     "lastDaily": 1791968050207
   },
   "181179571536100@lid": {
-    "xp": 80,
+    "xp": 955,
     "level": 1,
-    "coin": 0,
-    "inventory": [],
-    "equippedItem": null
+    "coin": 1112,
+    "inventory": [
+      "c45",
+      "c55",
+      "c9"
+    ],
+    "equippedItem": "c9",
+    "lastDaily": 1792474511968
   },
   "168582432464929@lid": {
     "xp": 40,
@@ -442,13 +478,125 @@
     "equippedItem": null
   },
   "56148224909313@lid": {
-    "xp": 10,
+    "xp": 160,
     "level": 1,
     "coin": 0,
     "inventory": [],
     "equippedItem": null
   },
   "135759822606489@lid": {
+    "xp": 10,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "190074448830506@lid": {
+    "xp": 200,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "164823849504803@lid": {
+    "xp": 10,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "62406629826658@lid": {
+    "xp": 820,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "157664172622004@lid": {
+    "xp": 30,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "243215693271062@lid": {
+    "xp": 140,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "219395620139124@lid": {
+    "xp": 710,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "151681685803049@lid": {
+    "xp": 10,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "61031887982610@lid": {
+    "xp": 10,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "209947044368553@lid": {
+    "xp": 350,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "86638499745929@lid": {
+    "xp": 440,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "7838499872779@lid": {
+    "xp": 100,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "94089915699325@lid": {
+    "xp": 10,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "25989383979047@lid": {
+    "xp": 340,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "183051741085706@lid": {
+    "xp": 10,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "51883741814895@lid": {
+    "xp": 220,
+    "level": 1,
+    "coin": 0,
+    "inventory": [],
+    "equippedItem": null
+  },
+  "194687042322449@lid": {
     "xp": 10,
     "level": 1,
     "coin": 0,

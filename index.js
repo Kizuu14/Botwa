@@ -336,36 +336,56 @@ async function startBot() {
         printQRInTerminal: false,
         logger: require('pino')({ level: 'silent' })
     });
-// Fungsi untuk scraping lirik dari Genius
+// Fungsi untuk membersihkan judul & artis dari embel-embel YouTube
+function cleanSearchQuery(text) {
+    return (text || '')
+        .replace(/\(.*\)|\[.*\]/g, '') // Hapus teks dalam kurung () atau []
+        .replace(/official|music|video|mv|audio|lyric|lirik|feat|ft/gi, '') // Hapus kata kunci bawaan YT
+        .replace(/[/\\|]/g, ' ') // Hapus karakter pemisah / atau |
+        .trim();
+}
+
+// Fungsi scraping lirik dari Genius
 async function getGeniusLyrics(songTitle, artistName) {
     try {
-        // 1. Cari URL lagu di Genius via API Search Genius/Google
-        const query = `${songTitle} ${artistName} Genius lyrics`;
-        const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+        // 1. Bersihkan judul dan nama artis
+        const cleanTitle = cleanSearchQuery(songTitle);
+        const cleanArtist = cleanSearchQuery(artistName);
+
+        // Jika judul terlalu pendek setelah dibersihkan, pakai judul asli
+        const queryTerm = `${cleanTitle || songTitle} ${cleanArtist} Genius lyrics`.trim();
+        const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(queryTerm)}`;
+
         const { data: html } = await axios.get(searchUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+            headers: { 
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36' 
+            }
         });
 
         const $ = cheerio.load(html);
         let geniusUrl = '';
-        $('.result__url').each((i, el) => {
-            const href = $(el).attr('href');
-            if (href && href.includes('genius.com') && href.includes('-lyrics')) {
+
+        $('.result__url, .result__snippet').each((i, el) => {
+            let href = $(el).attr('href') || $(el).text() || '';
+
+            // Decode dulu jika ada redirect dari DuckDuckGo
+            if (href.includes('uddg=')) {
+                href = decodeURIComponent(href.split('uddg=')[1].split('&')[0]);
+            }
+
+            if (href.includes('genius.com') && href.includes('-lyrics')) {
                 geniusUrl = href;
-                return false; // Stop loop
+                return false; // Stop loop jika ketemu
             }
         });
 
         if (!geniusUrl) return null;
 
-        // Clean URL kalau ada redirect DuckDuckGo
-        if (geniusUrl.includes('uddg=')) {
-            geniusUrl = decodeURIComponent(geniusUrl.split('uddg=')[1].split('&')[0]);
-        }
-
         // 2. Scrape halaman Genius
         const { data: pageHtml } = await axios.get(geniusUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+            headers: { 
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36' 
+            }
         });
         const $page = cheerio.load(pageHtml);
 
@@ -869,6 +889,10 @@ if (dbUsers[sender].level < 100) {
   │  └ Cari & pilih lagu dari 5 daftar hasil pencarian.
   ├ *.tt <link tiktok>*
   │  └ Download video TikTok tanpa watermark.
+  ├ *.fb <link facebook>*
+  │  └ Download video Facebook.
+  ├ *.ig <link instagram>*
+  │  └ Download video Instagram.
   └ *.intip*
      └ Reply foto/video "Sekali Lihat" (View Once).
 
