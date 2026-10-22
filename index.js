@@ -459,28 +459,27 @@ async function getGeniusLyrics(songTitle, artistName) {
                 const hours = now.getHours();
                 const minutes = now.getMinutes();
                 const currentDate = now.toDateString();
-
-                if (hours === 22 && minutes === 10 && lastClosedDate !== currentDate) {
-                    console.log('⏰ [22:10 WIB] Menjalankan Auto Close Grup...');
-                    try {
-                        const groups = await sock.groupFetchAllParticipating();
-                        for (let groupId in groups) {
-                            try {
-                                await sock.groupSettingUpdate(groupId, 'announcement');
-                                await sock.sendMessage(groupId, {
-                                    text: `📥 *GRUP DITUTUP OTOMATIS*\n\n🌙 *Status:* Ditutup\n⏰ *Waktu:* 22:00 WIB\n🌅 *Buka Kembali:* 05:10 WIB\n\nℹ️ Hanya admin yang dapat mengirim pesan.`
-                                });
-                                console.log(`✅ Auto close berhasil di: ${groups[groupId].subject}`);
-                            } catch (err) {
-                                console.log(`❌ Gagal auto close di ${groupId} (Bot bukan admin/error)`);
-                            }
-                            await new Promise(r => setTimeout(r, 1000));
-                        }
-                        lastClosedDate = currentDate;
-                    } catch (e) {
-                        console.error('Error auto close:', e.message || e);
-                    }
-                }
+               if (hours === 23 && minutes === 30 && lastClosedDate !== currentDate) {
+    console.log('⏰ [23:30 WIB] Menjalankan Auto Close Grup...');
+    try {
+        const groups = await sock.groupFetchAllParticipating();
+        for (let groupId in groups) {
+            try {
+                await sock.groupSettingUpdate(groupId, 'announcement');
+                await sock.sendMessage(groupId, { 
+                    text: `📥 *GRUP DITUTUP OTOMATIS*\n\n🌙 *Status:* Ditutup\n⏰ *Waktu:* 23:30 WIB\n\n💤 Selamat beristirahat semuanya, grup dibuka kembali besok pagi!`
+                });
+                console.log(`✅ Auto close berhasil di: ${groups[groupId].subject}`);
+            } catch (err) {
+                console.log(`❌ Gagal auto close di ${groupId} (Bot bukan admin/error)`);
+            }
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        lastClosedDate = currentDate;
+    } catch (e) {
+        console.error('Error auto close:', e.message || e);
+    }
+}
 
                 if (hours === 5 && minutes === 10 && lastOpenedDate !== currentDate) {
                     console.log('⏰ [05:10 WIB] Menjalankan Auto Open Grup...');
@@ -948,8 +947,7 @@ if (dbUsers[sender].level < 100) {
 └─ *.lepas*
    └ Lepas item gacha yang sedang dipakai.
 
-📌 *Auto Close: 22:10 WIB | Auto Open: 05:10 WIB*`;
-
+📌*Auto Close: 23:30 WIB | Auto Open: 05:10 WIB*`;
             return await sock.sendMessage(from, { text: menuText });
         }
 
